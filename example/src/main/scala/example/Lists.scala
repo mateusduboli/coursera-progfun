@@ -50,7 +50,7 @@ object Lists {
     } else if(xs.size == 1) {
     	xs.head
     } else {
-    	var first = xs.head
+    	val first = xs.head
     	var largest = max(xs.tail)
     	if( first > largest){
     	  largest = first
