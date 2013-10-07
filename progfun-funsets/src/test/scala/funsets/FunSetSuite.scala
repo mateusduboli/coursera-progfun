@@ -14,7 +14,6 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class FunSetSuite extends FunSuite {
 
-
   /**
    * Link to the scaladoc - very clear and detailed tutorial of FunSuite
    *
@@ -47,50 +46,52 @@ class FunSetSuite extends FunSuite {
     assert(1 + 2 === 3)
   }
 
-  
   import FunSets._
 
   test("contains is implemented") {
     assert(contains(x => true, 100))
   }
-  
+
   /**
    * When writing tests, one would often like to re-use certain values for multiple
    * tests. For instance, we would like to create an Int-set and have multiple test
    * about it.
-   * 
+   *
    * Instead of copy-pasting the code for creating the set into every test, we can
    * store it in the test class using a val:
-   * 
+   *
    *   val s1 = singletonSet(1)
-   * 
+   *
    * However, what happens if the method "singletonSet" has a bug and crashes? Then
    * the test methods are not even executed, because creating an instance of the
    * test class fails!
-   * 
+   *
    * Therefore, we put the shared values into a separate trait (traits are like
    * abstract classes), and create an instance inside each test method.
-   * 
+   *
    */
 
   trait TestSets {
     val s1 = singletonSet(1)
     val s2 = singletonSet(2)
     val s3 = singletonSet(3)
+    val s4 = union(singletonSet(4), union(s1,
+      union(s3, union(singletonSet(5),
+        union(singletonSet(7), singletonSet(1000))))))
   }
 
   /**
    * This test is currently disabled (by using "ignore") because the method
    * "singletonSet" is not yet implemented and the test would fail.
-   * 
+   *
    * Once you finish your implementation of "singletonSet", exchange the
    * function "ignore" by "test".
    */
   test("singletonSet(1) contains 1") {
-    
+
     /**
      * We create a new instance of the "TestSets" trait, this gives us access
-     * to the values "s1" to "s3". 
+     * to the values "s1" to "s3".
      */
     new TestSets {
       /**
@@ -107,6 +108,37 @@ class FunSetSuite extends FunSuite {
       assert(contains(s, 1), "Union 1")
       assert(contains(s, 2), "Union 2")
       assert(!contains(s, 3), "Union 3")
+    }
+  }
+
+  test("exists given {1, 3, 4, 5, 7, 1000") {
+    new TestSets {
+      val s = singletonSet(2)
+      assert(!exists(s4, s), "2 shouldn't exist in the given set.")
+    }
+  }
+
+  test("exists & filter: even") {
+    new TestSets {
+      def even(x: Int) = (x % 2) == 0
+      assert(!contains(even, 3), "The set of all even numbers should not contain odd element")
+    }
+  }
+  
+  test("forall & map: doubling numbers") {
+    new TestSets {
+      def isEven(x : Int) = (x % 2 == 0)
+      def isOdd(x : Int) = 
+        if (x % 2 == 1){
+          print(x)
+          true
+        } else false
+      def dobl(x : Int) : Int = 2 * x
+      printSet(isEven)
+      
+      assert(isEven(2), "The set even contains 2")
+      assert(!exists(map(isEven, dobl),isOdd), "Pedro")
+      //      assert(forall(map(isEven, dobl),isEven),"The set obtained by doubling all numbers should contain only even numbers.")
     }
   }
 }
