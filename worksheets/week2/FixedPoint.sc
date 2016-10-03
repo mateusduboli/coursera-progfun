@@ -16,5 +16,11 @@ object FixedPoint {
     loop(guess)
   }
 
+  def averageDamp(f: Double => Double)(x: Double): Double = (x + f(x)) / 2
+
+  def sqrt(x: Double): Double = fixedPoint(averageDamp(y => x / y))(1.0)
+
   fixedPoint(x => 1 + x / 2)(1)
+
+  sqrt(2)
 }
