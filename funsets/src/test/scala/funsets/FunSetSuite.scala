@@ -77,7 +77,11 @@ class FunSetSuite extends FunSuite {
     val s1 = singletonSet(1)
     val s2 = singletonSet(2)
     val s3 = singletonSet(3)
-  }
+
+    val positivesBelow10 = { x: Int => x >= 0 && x < 10}
+    val evenNumbers      = { x: Int => x % 2 == 0}
+    val oddNumbers       = { x: Int => x % 2 == 1}
+   }
 
   /**
    * This test is currently disabled (by using "ignore") because the method
@@ -110,5 +114,64 @@ class FunSetSuite extends FunSuite {
     }
   }
 
+  test("intersect contain only the values in both sets") {
+    new TestSets {
+      val i = intersect(positivesBelow10, evenNumbers)
+      assert(contains(i, 0), "Positive even")
+      assert(contains(i, 2), "Positive even")
+      assert(contains(i, 4), "Positive even")
+      assert(contains(i, 6), "Positive even")
+      assert(contains(i, 8), "Positive even")
+      assert(!contains(i, 5), "Positive odd")
+    }
+  }
+
+  test("diff contains all elements in s but not in f") {
+    new TestSets {
+      val d = diff(positivesBelow10, evenNumbers)
+      assert(contains(d, 1), "Positive odd")
+      assert(contains(d, 3), "Positive odd")
+      assert(contains(d, 5), "Positive odd")
+      assert(contains(d, 7), "Positive odd")
+      assert(contains(d, 9), "Positive odd")
+      assert(!contains(d, 2), "Positive even")
+    }
+  }
+
+  test("filter should add a predicate to the resulting set") {
+    new TestSets {
+      val i = intersect(positivesBelow10, evenNumbers)
+      assert(contains(i, 0), "Positive even")
+      assert(contains(i, 2), "Positive even")
+      assert(contains(i, 4), "Positive even")
+      assert(contains(i, 6), "Positive even")
+      assert(contains(i, 8), "Positive even")
+      assert(!contains(i, 5), "Positive odd")
+    }
+  }
+
+  test("forall should validate a predicate against the search space") {
+    new TestSets {
+      assert(forall(positivesBelow10, {x: Int => x < 10}), "Positive less than 10")
+      assert(!forall(positivesBelow10, {x: Int => x > 10}), "Some number above 11")
+    }
+  }
+
+  test("exists should validate a predicate against one element of the search space") {
+    new TestSets {
+      assert(exists(positivesBelow10, {x: Int => x == 9}), "A number equal to 10")
+      assert(exists(positivesBelow10, {x: Int => x < 10}), "Positive less than 10")
+      assert(!exists(positivesBelow10, {x: Int => x > 10}), "Some number above 11")
+    }
+  }
+
+  test("map should validate a predicate against one element of the search space") {
+    new TestSets {
+      val doubleOfPositivesBelow10 = map(positivesBelow10, {x: Int => x * 2})
+      assert(exists(doubleOfPositivesBelow10, { x: Int => x == 18}), "A number equal to 18")
+      assert(forall(doubleOfPositivesBelow10, evenNumbers), "Are all even")
+      assert(!exists(doubleOfPositivesBelow10, oddNumbers), "Not odd")
+    }
+  }
 
 }
