@@ -75,6 +75,13 @@ abstract class TweetSet {
     else max
   }
 
+  private def mostRetweetedProcedural: Tweet = {
+    var max: Tweet = null
+    this.foreach { tweet => if (max == null || tweet.retweets > max.retweets) max = tweet }
+    if (max == null) throw new NoSuchElementException
+    max
+  }
+
   /**
     * Returns a list containing all tweets of this set, sorted by retweet count
     * in descending order. In other words, the head of the resulting list should
