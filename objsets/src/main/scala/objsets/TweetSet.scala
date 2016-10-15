@@ -34,7 +34,6 @@ class Tweet(val user: String, val text: String, val retweets: Int) {
   */
 abstract class TweetSet {
 
-  def isEmpty: Boolean
   /**
     * This method takes a predicate and returns a subset of all the elements
     * in the original set for which the predicate is true.
@@ -66,21 +65,7 @@ abstract class TweetSet {
     * Question: Should we implement this method here, or should it remain abstract
     * and be implemented in the subclasses?
     */
-  def mostRetweeted: Tweet = {
-    val temp = new Tweet("", "", 0)
-    val max: Tweet = reduce(temp, { (acc: Tweet, tweet: Tweet) =>
-      if (acc.retweets > tweet.retweets) acc else tweet
-    })
-    if (max == temp) throw new NoSuchElementException
-    else max
-  }
-
-  private def mostRetweetedProcedural: Tweet = {
-    var max: Tweet = null
-    this.foreach { tweet => if (max == null || tweet.retweets > max.retweets) max = tweet }
-    if (max == null) throw new NoSuchElementException
-    max
-  }
+  def mostRetweeted: Tweet
 
   /**
     * Returns a list containing all tweets of this set, sorted by retweet count
@@ -91,16 +76,7 @@ abstract class TweetSet {
     * Question: Should we implement this method here, or should it remain abstract
     * and be implemented in the subclasses?
     */
-  def descendingByRetweet: TweetList = {
-    def loop(set: TweetSet): TweetList = {
-      if (set.isEmpty) Nil
-      else {
-        val max = set.mostRetweeted
-        new Cons(max, loop(set.remove(max)))
-      }
-    }
-    loop(this)
-  }
+  def descendingByRetweet: TweetList
 
   /**
     * The following methods are already implemented
@@ -129,15 +105,17 @@ abstract class TweetSet {
     */
   def foreach(f: Tweet => Unit): Unit
 
-  def reduce(zero: Tweet, f: (Tweet, Tweet) => Tweet): Tweet = reduceAcc(zero, f)
-
-  def reduceAcc(acc: Tweet, f: (Tweet, Tweet) => Tweet): Tweet
 }
 
 class Empty extends TweetSet {
-  def isEmpty: Boolean = true
 
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = acc
+
+  def union(that: TweetSet): TweetSet = that
+
+  def descendingByRetweet: TweetList = Nil
+
+  def mostRetweeted: Tweet = throw new NoSuchElementException("mostRetweeted from Empty")
 
   /**
     * The following methods are already implemented
@@ -151,18 +129,28 @@ class Empty extends TweetSet {
 
   def foreach(f: Tweet => Unit): Unit = ()
 
-  def union(that: TweetSet): TweetSet = that
-
-  def reduceAcc(acc: Tweet, f: (Tweet, Tweet) => Tweet): Tweet = acc
 }
 
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
 
-  def isEmpty: Boolean = false
-
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = {
     val newAcc = if (p(elem)) acc incl elem else acc
     right.filterAcc(p, left.filterAcc(p, newAcc))
+  }
+
+  def union(that: TweetSet): TweetSet = {
+    left.union(right.union(that incl elem))
+  }
+
+  def descendingByRetweet: TweetList = {
+    val most = this.mostRetweeted
+    new Cons(most, remove(most).descendingByRetweet)
+  }
+
+  def mostRetweeted: Tweet = {
+    var max = elem
+    foreach { t => if (t.retweets > max.retweets) max = t }
+    max
   }
 
   /**
@@ -191,13 +179,6 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     right.foreach(f)
   }
 
-  def union(that: TweetSet): TweetSet = {
-    if (that.isEmpty) this
-    else left.union(right.union(that incl elem))
-  }
-
-  def reduceAcc(acc: Tweet, f: (Tweet, Tweet) => Tweet): Tweet =
-    left.reduceAcc(right.reduceAcc(f(acc, elem), f), f)
 }
 
 trait TweetList {
