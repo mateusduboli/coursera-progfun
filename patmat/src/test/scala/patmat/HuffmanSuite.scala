@@ -56,6 +56,38 @@ class HuffmanSuite extends FunSuite {
     }
   }
 
+  test("encode a single character") {
+    val string = string2Chars("a")
+    val expected = 0 :: 0 :: Nil
+    new TestTrees {
+      assert(encode(t2)(string) === expected)
+    }
+  }
+
+  test("encode a series of characters") {
+    val string = string2Chars("abdbaa")
+    val expected = List(0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0)
+    new TestTrees {
+      assert(encode(t2)(string) === expected)
+    }
+  }
+
+  test("quickEncode a single character") {
+    val string = string2Chars("a")
+    val expected = 0 :: 0 :: Nil
+    new TestTrees {
+      assert(quickEncode(t2)(string) === expected)
+    }
+  }
+
+  test("quickEncode a series of characters") {
+    val string = string2Chars("abdbaa")
+    val expected = List(0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0)
+    new TestTrees {
+      assert(quickEncode(t2)(string) === expected)
+    }
+  }
+
   test("decode and encode a very short text should be identity") {
     new TestTrees {
       assert(decode(t1, encode(t1)("ab".toList)) === "ab".toList)
