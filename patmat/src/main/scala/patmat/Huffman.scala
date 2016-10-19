@@ -1,12 +1,11 @@
 package patmat
 
-import common._
-
 /**
   * Assignment 4: Huffman coding
   *
   */
-object Huffman {
+object Huffman extends App {
+
 
   /**
     * A huffman code is represented by a binary tree.
@@ -90,8 +89,8 @@ object Huffman {
     * head of the list should have the smallest weight), where the weight
     * of a leaf is the frequency of the character.
     */
-  def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = {
-    freqs
+  def makeOrderedLeafList(frequencies: List[(Char, Int)]): List[Leaf] = {
+    frequencies
       .sortBy(_._2)
       .map { case (c: Char, freq: Int) => Leaf(c, freq) }
   }
@@ -153,6 +152,7 @@ object Huffman {
     until(singleton, combine)(leafs) match {
       case (x1 :: x2 :: Nil) => makeCodeTree(x1, x2)
       case (x1 :: Nil) => x1
+      case _ => throw new IllegalArgumentException
     }
   }
 
@@ -165,7 +165,18 @@ object Huffman {
     * This function decodes the bit sequence `bits` using the code tree `tree` and returns
     * the resulting list of characters.
     */
-  def decode(tree: CodeTree, bits: List[Bit]): List[Char] = ???
+  def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
+    def decodeIter(currTree: CodeTree, currBits: List[Bit]): List[Char] = {
+      (currTree, currBits) match {
+        case (Leaf(c, _), List()) => c :: Nil
+        case (Leaf(c, _), _) => c :: decodeIter(tree, currBits)
+        case (Fork(left, right, _, _), (0 :: tail)) => decodeIter(left, tail)
+        case (Fork(left, right, _, _), (1 :: tail)) => decodeIter(right, tail)
+        case (_, _) => throw new IllegalArgumentException
+      }
+    }
+    decodeIter(tree, bits)
+  }
 
   /**
     * A Huffman coding tree for the French language.
@@ -176,14 +187,14 @@ object Huffman {
 
   /**
     * What does the secret message say? Can you decode it?
-    * For the decoding use the `frenchCode' Huffman tree defined above.
+    * For the decoding use the 'frenchCode' Huffman tree defined above.
     **/
   val secret: List[Bit] = List(0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1)
 
   /**
     * Write a function that returns the decoded secret
     */
-  def decodedSecret: List[Char] = ???
+  def decodedSecret: List[Char] = decode(frenchCode, secret)
 
 
   // Part 4a: Encoding using Huffman tree
@@ -224,6 +235,7 @@ object Huffman {
       currTable match {
         case ((`char`, bits) :: _) => bits
         case _ :: tail => codeBitsIter(tail)
+        case _ => throw new IllegalArgumentException("Character not in table")
       }
     }
     codeBitsIter(table)
