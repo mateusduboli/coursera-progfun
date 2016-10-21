@@ -301,6 +301,6 @@ object Huffman extends App {
     quickEncodeIter(text, List())
   }
 
-  val tree = createCodeTree(string2Chars("asdfasdfassjasjdinmxkalaiqooiqwenaisuqwnsaaiuwmsijs7123sin1oinaasdascxxsasaoiusnaiozsfadad"))
+  val tree = createCodeTree(string2Chars("aabbbccccdddddeeeeee"))
   println(toGraphViz(tree))
 }
