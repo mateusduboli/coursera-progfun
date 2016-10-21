@@ -23,6 +23,20 @@ object Huffman extends App {
 
   case class Leaf(char: Char, weight: Int) extends CodeTree
 
+  def toGraphViz(tree: CodeTree): String = {
+    def nodeName(tree: CodeTree): String = {
+      tree match {
+        case Fork(_, _, chars, weight) => s""""($chars, $weight)""""
+        case Leaf(char, weight) => s""""($char, $weight)""""
+      }
+    }
+    tree match {
+      case f: Fork =>
+        val node = nodeName(f)
+        s"$node -> ${nodeName(f.left)}\n$node -> ${nodeName(f.right)}\n" + toGraphViz(f.left) + toGraphViz(f.right)
+      case l: Leaf => nodeName(tree) + "\n"
+    }
+  }
 
   // Part 1: Basics
   def weight(tree: CodeTree): Int = tree match {
@@ -114,9 +128,13 @@ object Huffman extends App {
     * If `trees` is a list of less than two elements, that list should be returned
     * unchanged.
     */
-  def combine(trees: List[CodeTree]): List[CodeTree] = trees match {
-    case (x1 :: x2 :: tail) => makeCodeTree(x1, x2) :: tail
-    case _ => trees
+  def combine(trees: List[CodeTree]): List[CodeTree] = {
+    trees match {
+      case (x1 :: x2 :: tail) =>
+        val newNode = if (weight(x1) < weight(x2)) makeCodeTree(x1, x2) else makeCodeTree(x2, x1)
+        newNode :: tail
+      case _ => trees
+    }
   }
 
   /**
@@ -282,4 +300,7 @@ object Huffman extends App {
     }
     quickEncodeIter(text, List())
   }
+
+  val tree = createCodeTree(string2Chars("asdfasdfassjasjdinmxkalaiqooiqwenaisuqwnsaaiuwmsijs7123sin1oinaasdascxxsasaoiusnaiozsfadad"))
+  println(toGraphViz(tree))
 }
