@@ -24,18 +24,19 @@ object Huffman extends App {
   case class Leaf(char: Char, weight: Int) extends CodeTree
 
   def toGraphViz(tree: CodeTree): String = {
-    def nodeName(tree: CodeTree): String = {
+    def nodeName(tree: CodeTree): String = s""""(${chars(tree)},${weight(tree)})""""
+
+    def graphVizIter(tree: CodeTree): String = {
+      val treeName = nodeName(tree)
       tree match {
-        case Fork(_, _, chars, weight) => s""""($chars, $weight)""""
-        case Leaf(char, weight) => s""""($char, $weight)""""
+        case Fork(left, right, _, _) => s"$treeName -> ${nodeName(left)}\n" +
+          s"$treeName -> ${nodeName(right)}\n" +
+          graphVizIter(left) +
+          graphVizIter(right)
+        case Leaf(_, _) => s"$treeName\n"
       }
     }
-    tree match {
-      case f: Fork =>
-        val node = nodeName(f)
-        s"$node -> ${nodeName(f.left)}\n$node -> ${nodeName(f.right)}\n" + toGraphViz(f.left) + toGraphViz(f.right)
-      case l: Leaf => nodeName(tree) + "\n"
-    }
+    s"digraph Huffman {\n${graphVizIter(tree)}\n}"
   }
 
   // Part 1: Basics
