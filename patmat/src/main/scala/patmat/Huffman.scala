@@ -4,7 +4,7 @@ package patmat
   * Assignment 4: Huffman coding
   *
   */
-object Huffman extends App {
+object Huffman {
 
 
   /**
@@ -189,12 +189,13 @@ object Huffman extends App {
     */
   def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
     def decodeIter(currTree: CodeTree, currBits: List[Bit]): List[Char] = {
-      (currTree, currBits) match {
-        case (Leaf(c, _), List()) => c :: Nil
-        case (Leaf(c, _), _) => c :: decodeIter(tree, currBits)
-        case (Fork(left, right, _, _), (0 :: tail)) => decodeIter(left, tail)
-        case (Fork(left, right, _, _), (1 :: tail)) => decodeIter(right, tail)
-        case (_, _) => throw new IllegalArgumentException
+      currTree match {
+        case Fork(left, right, _, _) => currBits match {
+          case (0 :: tail) => decodeIter(left, tail)
+          case (1 :: tail) => decodeIter(right, tail)
+          case _ => Nil
+        }
+        case Leaf(c, _) => c :: decodeIter(tree, currBits)
       }
     }
     decodeIter(tree, bits)
@@ -304,7 +305,4 @@ object Huffman extends App {
     }
     quickEncodeIter(text, List())
   }
-
-  val tree = createCodeTree(string2Chars("aabbbccccdddddeeeeee"))
-  println(toGraphViz(tree))
 }

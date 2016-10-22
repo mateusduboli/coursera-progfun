@@ -66,6 +66,11 @@ class HuffmanSuite extends FunSuite {
     }
   }
 
+  test("decodeSecret gives the right secret") {
+    val expected = string2Chars("huffmanestcool")
+    assert(decodedSecret === expected)
+  }
+
   test("quickEncode a single character") {
     val string = string2Chars("a")
     val expected = 0 :: 0 :: Nil
