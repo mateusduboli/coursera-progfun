@@ -130,10 +130,13 @@ object Huffman extends App {
     * unchanged.
     */
   def combine(trees: List[CodeTree]): List[CodeTree] = {
+    def insertInOrder(trees: List[CodeTree], tree: CodeTree): List[CodeTree] = trees match {
+      case (x1 :: tail) if weight(x1) > weight(tree) => tree :: x1 :: tail
+      case (x1 :: tail) => x1 :: insertInOrder(tail, tree)
+      case Nil => tree :: Nil
+    }
     trees match {
-      case (x1 :: x2 :: tail) =>
-        val newNode = if (weight(x1) < weight(x2)) makeCodeTree(x1, x2) else makeCodeTree(x2, x1)
-        newNode :: tail
+      case (x1 :: x2 :: tail) => insertInOrder(tail, makeCodeTree(x1, x2))
       case _ => trees
     }
   }
