@@ -73,6 +73,15 @@ class AnagramsSuite extends FunSuite  {
     assert(sentenceAnagrams(sentence) === List(Nil))
   }
 
+  test("sentence anagram: I") {
+    val sentence = List("i")
+    val anas = List(
+      List("I")
+    )
+
+    assert(sentenceAnagrams(sentence) === anas)
+  }
+
   test("sentence anagrams: Linux rulez") {
     val sentence = List("Linux", "rulez")
     val anas = List(

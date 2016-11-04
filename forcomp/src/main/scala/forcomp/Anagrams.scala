@@ -89,10 +89,10 @@ object Anagrams {
     */
   def combinations(occurrences: Occurrences): List[Occurrences] = {
     def letterCombinations(prefixes: List[Occurrences], c: Char, n: Int): List[Occurrences] = {
-      (for {
+      for {
         prefix <- prefixes
-        i <- (1 to n)
-      } yield (prefix :+ (c, i))).toList
+        i <- 1 to n
+      } yield prefix :+ (c, i)
     }
 
     occurrences.foldLeft(List[Occurrences](List())) { (prefix: List[Occurrences], occurrence: (Char, Int)) =>
@@ -114,18 +114,12 @@ object Anagrams {
     (x, y) match {
       case (Nil, _) => x
       case (_, Nil) => x
-      case (x1 :: xs, y1 :: ys) =>
-        if (x1._1 == y1._1) {
-          if (x1._2 > y1._2) {
-            (x1._1, x1._2 - y1._2) :: subtract(xs, ys)
-          } else {
-            subtract(xs, ys)
-          }
-        } else if (x1._1 > y1._1) {
-          x1 :: subtract(x, ys)
-        } else {
-          x1 :: subtract(xs, y)
-        }
+      case (x1 :: xs, y1 :: ys) => (x1, y1) match {
+        case ((cx, nx), (cy, ny)) if cx == cy && nx > ny  => (cx, nx - ny) :: subtract(xs, ys)
+        case ((cx, nx), (cy, ny)) if cx == cy && nx <= ny => subtract(xs, ys)
+        case ((cx, nx), (cy, ny)) if cx > cy              => x1 :: subtract(x, ys)
+        case ((cx, nx), (cy, ny))                         => x1 :: subtract(xs, y)
+      }
     }
   }
 
@@ -171,8 +165,8 @@ object Anagrams {
     */
   def sentenceAnagrams(sentence: Sentence): List[Sentence] = {
     val occurrences = sentenceOccurrences(sentence)
-    combinations(occurrences).foldLeft(List[Sentence]()) { (anagrams, currOccurences) =>
-      anagrams :+ dictionaryByOccurrences(currOccurences)
+    combinations(occurrences).foldLeft(List[Sentence]()) { (anagrams, currOccurrences) =>
+      anagrams :+ dictionaryByOccurrences(currOccurrences)
     }
   }
 }
