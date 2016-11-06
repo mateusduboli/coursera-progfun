@@ -1,5 +1,7 @@
 package forcomp
 
+import java.io.Serializable
+
 
 object Anagrams {
 
@@ -117,7 +119,7 @@ object Anagrams {
       case (x1 :: xs, y1 :: ys) => (x1, y1) match {
         case ((cx, nx), (cy, ny)) if cx == cy && nx > ny  => (cx, nx - ny) :: subtract(xs, ys)
         case ((cx, nx), (cy, ny)) if cx == cy && nx <= ny => subtract(xs, ys)
-        case ((cx, nx), (cy, ny)) if cx > cy              => x1 :: subtract(x, ys)
+        case ((cx, nx), (cy, ny)) if cx > cy              => subtract(x, ys)
         case ((cx, nx), (cy, ny))                         => x1 :: subtract(xs, y)
       }
     }
@@ -165,8 +167,24 @@ object Anagrams {
     */
   def sentenceAnagrams(sentence: Sentence): List[Sentence] = {
     val occurrences = sentenceOccurrences(sentence)
-    combinations(occurrences).foldLeft(List[Sentence]()) { (anagrams, currOccurrences) =>
-      anagrams :+ dictionaryByOccurrences(currOccurrences)
+
+    val sentenceLength = sentence.mkString.length
+
+    val sentenceCombinations: Set[Occurrences] = combinations(occurrences).toSet
+
+    def findSentences(prefixCombinations: Set[Occurrences], prefix: Occurrences): List[Sentence] = {
+      if (prefix.isEmpty) return List(Nil)
+      val suffixCombinations: Set[Occurrences] = prefixCombinations.map(subtract(_, prefix))
+      val sentences = for {
+        word: Word <- dictionaryByOccurrences(prefix)
+        suffix: Occurrences <- suffixCombinations
+        sentenceSuffix <- findSentences(suffixCombinations, suffix)
+      } yield word :: sentenceSuffix
+      sentences
+    }
+
+    sentenceCombinations.foldLeft(List[Sentence]()) { (sentences: List[Sentence], prefix: Occurrences) =>
+      sentences ::: findSentences(sentenceCombinations, prefix).filter(_.mkString.length == sentenceLength)
     }
   }
 }
