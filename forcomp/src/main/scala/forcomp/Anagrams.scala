@@ -1,6 +1,6 @@
 package forcomp
 
-import java.io.Serializable
+import scala.collection.immutable.Iterable
 
 
 object Anagrams {
@@ -45,7 +45,7 @@ object Anagrams {
   }
 
   /** Converts a sentence into its character occurrence list. */
-  def sentenceOccurrences(s: Sentence): Occurrences = wordOccurrences(s.foldLeft("")(_ ++ _))
+  def sentenceOccurrences(s: Sentence): Occurrences = wordOccurrences(s.mkString)
 
   /** The `dictionaryByOccurrences` is a `Map` from different occurrences to a sequence of all
     * the words that have that occurrence count.
@@ -62,7 +62,7 @@ object Anagrams {
     * List(('a', 1), ('e', 1), ('t', 1)) -> Seq("ate", "eat", "tea")
     *
     */
-  lazy val dictionaryByOccurrences: Map[Occurrences, List[Word]] = dictionary.groupBy(wordOccurrences).withDefaultValue(List.empty[Word])
+  lazy val dictionaryByOccurrences: Map[Occurrences, List[Word]] = dictionary.groupBy(wordOccurrences).withDefaultValue(List[Word]())
 
   /** Returns all the anagrams of a given word. */
   def wordAnagrams(word: Word): List[Word] = dictionaryByOccurrences(wordOccurrences(word))
@@ -90,16 +90,15 @@ object Anagrams {
     * in the example above could have been displayed in some other order.
     */
   def combinations(occurrences: Occurrences): List[Occurrences] = {
-    def letterCombinations(prefixes: List[Occurrences], c: Char, n: Int): List[Occurrences] = {
-      for {
-        prefix <- prefixes
-        i <- 1 to n
-      } yield prefix :+ (c, i)
+    def combinationsLoop(prefixes: List[Occurrences], occurrencesSuffix: Occurrences): List[Occurrences] = {
+      occurrencesSuffix match {
+        case Nil => prefixes
+        case (c, n) :: tail =>
+          val cOccurrences: List[Occurrences] = for (prefix <- prefixes; i <- 1 to n) yield prefix :+ (c, i)
+          combinationsLoop(prefixes ::: cOccurrences, tail)
+      }
     }
-
-    occurrences.foldLeft(List[Occurrences](List())) { (prefix: List[Occurrences], occurrence: (Char, Int)) =>
-       prefix ::: letterCombinations(prefix, occurrence._1, occurrence._2)
-    }
+    combinationsLoop(List(List()), occurrences)
   }
 
   /** Subtracts occurrence list `y` from occurrence list `x`.
@@ -116,12 +115,15 @@ object Anagrams {
     (x, y) match {
       case (Nil, _) => x
       case (_, Nil) => x
-      case (x1 :: xs, y1 :: ys) => (x1, y1) match {
-        case ((cx, nx), (cy, ny)) if cx == cy && nx > ny  => (cx, nx - ny) :: subtract(xs, ys)
-        case ((cx, nx), (cy, ny)) if cx == cy && nx <= ny => subtract(xs, ys)
-        case ((cx, nx), (cy, ny)) if cx > cy              => subtract(x, ys)
-        case ((cx, nx), (cy, ny))                         => x1 :: subtract(xs, y)
-      }
+      case ((cx, nx) :: xs, (cy, ny) :: ys) =>
+        if (cx == cy) {
+          if (nx > ny) (cx, nx - ny) :: subtract(xs, ys)
+          else subtract(xs, ys)
+        } else if (cx > cy) {
+          subtract(x, ys)
+        } else {
+          (cx, nx) :: subtract(xs, y)
+        }
     }
   }
 

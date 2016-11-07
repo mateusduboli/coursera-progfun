@@ -8,7 +8,7 @@ import org.scalatest.junit.JUnitRunner
 import Anagrams._
 
 @RunWith(classOf[JUnitRunner])
-class AnagramsSuite extends FunSuite  {
+class AnagramsSuite extends FunSuite {
 
   test("wordOccurrences: abcd") {
     assert(wordOccurrences("abcd") === List(('a', 1), ('b', 1), ('c', 1), ('d', 1)))
@@ -18,16 +18,23 @@ class AnagramsSuite extends FunSuite  {
     assert(wordOccurrences("Robert") === List(('b', 1), ('e', 1), ('o', 1), ('r', 2), ('t', 1)))
   }
 
+  test("wordOccurrences: [empty]") {
+    assert(wordOccurrences("") === List())
+  }
+
 
   test("sentenceOccurrences: abcd e") {
     assert(sentenceOccurrences(List("abcd", "e")) === List(('a', 1), ('b', 1), ('c', 1), ('d', 1), ('e', 1)))
+  }
+
+  test("sentenceOccurrences: [empty]") {
+    assert(sentenceOccurrences(List()) === List())
   }
 
 
   test("dictionaryByOccurrences.get: eat") {
     assert(dictionaryByOccurrences.get(List(('a', 1), ('e', 1), ('t', 1))).map(_.toSet) === Some(Set("ate", "eat", "tea")))
   }
-
 
   test("word anagrams: married") {
     assert(wordAnagrams("married").toSet === Set("married", "admirer"))
@@ -37,7 +44,16 @@ class AnagramsSuite extends FunSuite  {
     assert(wordAnagrams("player").toSet === Set("parley", "pearly", "player", "replay"))
   }
 
+  test("subtract: lard - [empty]") {
+    val lard = List(('a', 1), ('d', 1), ('l', 1), ('r', 1))
+    val empty = List()
+    assert(subtract(lard, empty) === lard)
+  }
 
+  test("subtract: lard - lard") {
+    val lard = List(('a', 1), ('d', 1), ('l', 1), ('r', 1))
+    assert(subtract(lard, lard) === List.empty)
+  }
 
   test("subtract: lard - r") {
     val lard = List(('a', 1), ('d', 1), ('l', 1), ('r', 1))
@@ -45,7 +61,6 @@ class AnagramsSuite extends FunSuite  {
     val lad = List(('a', 1), ('d', 1), ('l', 1))
     assert(subtract(lard, r) === lad)
   }
-
 
   test("combinations: []") {
     assert(combinations(Nil) === List(Nil))
